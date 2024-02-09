@@ -1,33 +1,27 @@
-import React, { useEffect, useMemo, useRef } from "react";
-import { type NativeMethods } from "react-native";
+import React, { useEffect, useMemo, useRef } from "react"
+import { type NativeMethods } from "react-native"
 
-import { useCopilot } from "../contexts/CopilotProvider";
+import { useCopilot } from "../contexts/CopilotProvider"
 
 interface Props {
-  name: string;
-  order: number;
-  text: string;
-  children: React.ReactElement<any>;
-  active?: boolean;
+  name: string
+  order: number
+  text: string | React.ReactElement
+  children: React.ReactElement<any>
+  active?: boolean
 }
 
-export const CopilotStep = ({
-  name,
-  order,
-  text,
-  children,
-  active = true,
-}: Props) => {
-  const registeredName = useRef<string | null>(null);
-  const { registerStep, unregisterStep } = useCopilot();
-  const wrapperRef = React.useRef<NativeMethods | null>(null);
+export const CopilotStep = ({ name, order, text, children, active = true }: Props) => {
+  const registeredName = useRef<string | null>(null)
+  const { registerStep, unregisterStep } = useCopilot()
+  const wrapperRef = React.useRef<NativeMethods | null>(null)
 
   const measure = async () => {
     return await new Promise<{
-      x: number;
-      y: number;
-      width: number;
-      height: number;
+      x: number
+      y: number
+      width: number
+      height: number
     }>((resolve) => {
       const measure = () => {
         // Wait until the wrapper element appears
@@ -38,21 +32,21 @@ export const CopilotStep = ({
               y,
               width,
               height,
-            });
-          });
+            })
+          })
         } else {
-          requestAnimationFrame(measure);
+          requestAnimationFrame(measure)
         }
-      };
+      }
 
-      measure();
-    });
-  };
+      measure()
+    })
+  }
 
   useEffect(() => {
     if (active) {
       if (registeredName.current && registeredName.current !== name) {
-        unregisterStep(registeredName.current);
+        unregisterStep(registeredName.current)
       }
       registerStep({
         name,
@@ -61,28 +55,28 @@ export const CopilotStep = ({
         measure,
         wrapperRef,
         visible: true,
-      });
-      registeredName.current = name;
+      })
+      registeredName.current = name
     }
-  }, [name, order, text, registerStep, unregisterStep, active]);
+  }, [name, order, text, registerStep, unregisterStep, active])
 
   useEffect(() => {
     if (active) {
       return () => {
         if (registeredName.current) {
-          unregisterStep(registeredName.current);
+          unregisterStep(registeredName.current)
         }
-      };
+      }
     }
-  }, [name, unregisterStep, active]);
+  }, [name, unregisterStep, active])
 
   const copilotProps = useMemo(
     () => ({
       ref: wrapperRef,
       onLayout: () => {}, // Android hack
     }),
-    []
-  );
+    [],
+  )
 
-  return React.cloneElement(children, { copilot: copilotProps });
-};
+  return React.cloneElement(children, { copilot: copilotProps })
+}
